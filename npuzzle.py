@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import sys
 import bisect
 import random
@@ -17,6 +18,10 @@ sqrt = {4:2,
 
 def pos(nb, size):
     return (nb // size, nb % size)
+
+def missplaced(state):
+    size = sqrt[len(state)]
+    return len([x for x, y in zip(state, snake[size]) if x != y])
 
 def manhattan(state):
     d = 0
@@ -51,10 +56,13 @@ class OrderedValueDict:
     def __init__(self):
         self.d = {}
         self.list = collections.deque()
+        self.lenmax = 0
 
     def insort(self, key, value, sort_val):
         self.d[key] = value
         bisect.insort(self.list, (sort_val, key))
+        if len(self.list) > self.lenmax:
+            self.lenmax += 1
 
     def contain(self, key):
         return self.d.get(key)
@@ -74,14 +82,15 @@ class OrderedValueDict:
         return not len(self.list)
 
 class AStar:
-    def __init__(self, start, stop, size):
+    def __init__(self, start, stop, size, heuristique):
         self.size = size
         self.start = State(start)
         self.stop = stop
         self._open = OrderedValueDict()
-        self._open.insort(self.start.key, self.start, self.start.f)         #insort(key, val, sorting_value)
+        self._open.insort(self.start.key, self.start, self.start.f)
         self._close = {}
         self.state_number = 0
+        self.h = heuristique
 
     def procede(self):
         print('Solving Puzzle...')
@@ -95,10 +104,10 @@ class AStar:
                     print ('◦ Total number of states ever selected in the opened set:')
                     print('  ', self.state_number)
                     print ('◦ Maximum number of states ever represented in memory at the same time:')
-                    print('  ', 666)
+                    print('  ', self._open.lenmax)
                     print ('◦ Number of moves required to transition from the initial state to the final state:')
                     return State(child, m)
-                c = State(child, m, manhattan)
+                c = State(child, m, self.h)
                 k = self._open.contain(c.key)
                 l = c.key in self._close
                 if not k and not l:
@@ -131,11 +140,12 @@ class NSolver:
     def __init__(self):
         self.size = None
         self.seq = []
+        self.HEURISTIQUE = [manhattan, missplaced, 'linearconflict']
 
     def parse(self, path):
         with open(path, 'r') as f:
             for l in f:
-                l = l.split('#')[0]
+                l = re.sub(r'\n', '', l.split('#')[0])
                 if not l:
                     continue
                 if self.size == None:
@@ -177,9 +187,15 @@ class NSolver:
     def solve(self):
         print('''Wich heuristique would you like to use :
     [0] - Manhattan distance (taxicab distance)
-    [1] - Wrong place tiles
-    [2] - Right place tiles''')     #TODO Right/wrong place are the same arent they ?
-        AS = AStar(self.grid, snake[self.size], self.size)
+    [1] - Missplaced tiles
+    [2] - Linear Conflict''')     #TODO Right/wrong place are the same arent they ?
+        try:
+            h = self.HEURISTIQUE[int(input())]
+        except:
+            print('Choose an heuristique by entering the correspondante number. Dummy.')
+            self.solve()
+            return
+        AS = AStar(self.grid, snake[self.size], self.size, h)
         self.solution = AS.procede()
         self._output(self.solution)
         print('  ', len(self.seq))
