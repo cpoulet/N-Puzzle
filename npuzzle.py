@@ -5,60 +5,112 @@ import bisect
 import random
 import collections
 
-Node = collections.namedtuple('Node', ['f', 'g', 'h', 'value', 'parent']) 
+snake = {2:[1,2,3,0],
+        3:[1,2,3,8,0,4,7,6,5],
+        4:[1,2,3,4,12,13,14,5,11,0,15,6,10,9,8,7],
+        5:[1,2,3,4,5,16,17,18,19,6,15,24,0,20,7,14,23,22,21,8,13,12,11,10,9]}
 
-class sortedList:
-    '''Sorted list class'''
+sqrt = {4:2,
+        9:3,
+        16:4,
+        25:5}
+
+def pos(nb, size):
+    return (nb // size, nb % size)
+
+def manhattan(state):
+    d = 0
+    size = sqrt[len(state)]
+    for i,x in enumerate(state):
+        ti = pos(i, size)
+        tx = pos(snake[size].index(x), size)
+        d += abs(ti[0] - tx[0]) + abs(ti[1] - tx[1])
+    return d
+
+def ltok(li):
+    return ''.join([chr(x) for x in li])
+
+def ktol(key):
+    return [ord(x) for x in key]
+
+class State:
+    '''N-Puzzle State'''
+    def __init__(self, state, parent=None, heuristique=None):
+        self.state = state
+        self.key = ltok(state)
+        self.parent = parent
+        self.g = parent.g + 1 if parent else 0
+        self.h = heuristique(state) if heuristique else 0
+        self.f = self.g + self.h
+
+class OrderedValueDict:
+    '''Dictionnary with:
+    O(1) :      pop()
+                contain()
+    O(log(n)) : insort()'''
     def __init__(self):
+        self.d = {}
         self.list = collections.deque()
 
-    def insort(self, elem):
-        bisect.insort(self.list, elem)
+    def insort(self, key, value, sort_val):
+        self.d[key] = value
+        bisect.insort(self.list, (sort_val, key))
 
-    def get(self):
-        return self.list.popleft()
+    def contain(self, key):
+        return self.d.get(key)
 
-    def contain(self, elem):
-        for i, e in enumerate(self.list):
-            if e == elem:
-                return i
-        return None
+    def pop(self):
+        key = self.list.popleft()[1]
+        return self.d.pop(key)
 
     def min(self):
-        return self.list[-1]
+        return self.d[self.list[0][1]]
+
+    def remove(self, key):
+        d = self.d.pop(key)
+        self.list.remove((d.f, key))
 
     def empty(self):
-        return not bool(len(self.list))
+        return not len(self.list)
 
 class AStar:
     def __init__(self, start, stop, size):
         self.size = size
-        self.start = start
+        self.start = State(start)
         self.stop = stop
-        self._open = sortedList()
-        self._open.insort(Node(0, 0, 0, start, None))
-        self._close = []
+        self._open = OrderedValueDict()
+        self._open.insort(self.start.key, self.start, self.start.f)         #insort(key, val, sorting_value)
+        self._close = {}
+        self.state_number = 0
 
     def procede(self):
+        print('Solving Puzzle...')
         while not self._open.empty():
-            m = self._open.get()
-            self._close.append(m)
-            for child in self._get_child(m.value):
-                g = m.g + 1
+            self.state_number += 1
+            m = self._open.pop()
+            self._close[m.key] = m.f
+            for child in self._get_child(m.state):
                 if child == self.stop:
-                    self.solution = Node(g, g, 0, child, m)
-                    return
-                h = self._wrong_place(child)
-                c = Node(g + h, g, h, child, m)
-                k = self._open.contain(c)
-                if k == None and c not in self._close:
-                    self._open.insort(c)
-                elif k != -1:
-                    if self._open.list[k].f > g + h:
-                        self._open.list[k] = c
-                elif c in self._close: #not opti
-                    self._close.remove(c)
-                    self._open.insort(c)
+                    print ('Success !')
+                    print ('◦ Total number of states ever selected in the opened set:')
+                    print('  ', self.state_number)
+                    print ('◦ Maximum number of states ever represented in memory at the same time:')
+                    print('  ', 666)
+                    print ('◦ Number of moves required to transition from the initial state to the final state:')
+                    return State(child, m)
+                c = State(child, m, manhattan)
+                k = self._open.contain(c.key)
+                l = c.key in self._close
+                if not k and not l:
+                    self._open.insort(c.key, c, c.f)
+                elif k:
+                    if k.f > c.f:
+                        self._open.remove(c.key)
+                        self._open.insort(c.key, c, c.f)
+                elif l:
+                    if self._close.get(c.key) > c.f:
+                        self._close.pop(c.key)
+                        self._open.insort(c.key, c, c.f)
 
     def _get_child(self, m):
         z = m.index(0)
@@ -75,12 +127,10 @@ class AStar:
         right = (nb // size, nb % size + 1)
         return [x[0]*size + x[1] for x in [up, left, right, down] if not -1 in x and not size in x]
 
-    def _wrong_place(self, k):
-        return len([1 for x, y in zip(k, self.stop) if x != y])
-
 class NSolver:
     def __init__(self):
         self.size = None
+        self.seq = []
 
     def parse(self, path):
         with open(path, 'r') as f:
@@ -129,15 +179,15 @@ class NSolver:
     [0] - Manhattan distance (taxicab distance)
     [1] - Wrong place tiles
     [2] - Right place tiles''')     #TODO Right/wrong place are the same arent they ?
-        AS = AStar(self.grid, list(range(1, self.size ** 2)) + [0], self.size)
-        AS.procede()
-        self._output(AS.solution)
+        AS = AStar(self.grid, snake[self.size], self.size)
+        self.solution = AS.procede()
+        self._output(self.solution)
+        print('  ', len(self.seq))
 
-    def _output(self, node):
-        if node.parent != None:
-            self._output(node.parent)
-        self.show_grid(node.value)
-        print()
+    def _output(self, state):
+        if state.parent != None:
+            self._output(state.parent)
+        self.seq.append(state.state)
 
 def main(argv):
     if len(argv) > 2:
