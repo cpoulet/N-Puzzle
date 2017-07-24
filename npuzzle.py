@@ -6,6 +6,7 @@ import time
 import bisect
 import random
 import collections
+from itertools import permutations
 
 snake = {2:[1,2,3,0],
         3:[1,2,3,8,0,4,7,6,5],
@@ -32,6 +33,24 @@ def manhattan(state):
         tx = pos(snake[size].index(x), size)
         d += abs(ti[0] - tx[0]) + abs(ti[1] - tx[1])
     return d
+
+def conflict(li, aim):      #memoization could be usefull
+    if li == aim :
+        return 0
+    union = set(li) & set(aim)
+    k = 0
+    for x in permutations(union, 2):
+        if li.index(x[0]) > li.index(x[1]) and aim.index(x[0]) < aim.index(x[1]):
+            k += 2
+    return k
+
+def linearconflict(state):
+    size = sqrt[len(state)]
+    k = 0
+    for i in range(size):
+        k += conflict(state[i*size:(i + 1)*size], snake[size][i*size:(i + 1)*size])
+        k += conflict([state[x*size + i] for x in range(size)],[snake[size][x*size + i] for x in range(size)])
+    return k + manhattan(state)
 
 def ltok(li):
     return ''.join([chr(x) for x in li])
@@ -142,7 +161,7 @@ class NSolver:
     def __init__(self):
         self.size = None
         self.seq = []
-        self.HEURISTIQUE = [manhattan, missplaced, 'linearconflict']
+        self.HEURISTIQUE = [manhattan, missplaced, linearconflict]
 
     def parse(self, path):
         with open(path, 'r') as f:
@@ -192,7 +211,6 @@ class NSolver:
                 grid[grid.index(aim[i])] = grid[i]
                 grid[i] = aim[i]
                 t = 1 - t
-        print('z =', z, 't =', t)
         return z == t
 
     def show_grid(self, grid):
@@ -204,7 +222,7 @@ class NSolver:
         print('''Wich heuristique would you like to use :
     [0] - Manhattan distance (taxicab distance)
     [1] - Missplaced tiles
-    [2] - Linear Conflict''')     #TODO Right/wrong place are the same arent they ?
+    [2] - Linear Conflict''')
         try:
             h = self.HEURISTIQUE[int(input())]
         except:
