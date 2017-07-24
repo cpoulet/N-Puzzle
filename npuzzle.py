@@ -2,6 +2,7 @@
 
 import re
 import sys
+import time
 import bisect
 import random
 import collections
@@ -94,13 +95,14 @@ class AStar:
 
     def procede(self):
         print('Solving Puzzle...')
+        t = time.time()
         while not self._open.empty():
             self.state_number += 1
             m = self._open.pop()
             self._close[m.key] = m.f
             for child in self._get_child(m.state):
                 if child == self.stop:
-                    print ('Success !')
+                    print ('Success in {:.3f} seconds.'.format(time.time() - t))
                     print ('◦ Total number of states ever selected in the opened set:')
                     print('  ', self.state_number)
                     print ('◦ Maximum number of states ever represented in memory at the same time:')
@@ -166,7 +168,8 @@ class NSolver:
         self.grid = list(range(self.size**2))
         random.shuffle(self.grid)
         self.show_grid()
-        self._is_solvable()
+        if not self.is_solvable(self.grid[::]):
+            raise Exception('This grid is not solvable.')
 
     def _check_grid(self):
         if len(self.grid) != self.size ** 2 or len(self.grid) != len(set(self.grid)):
@@ -174,10 +177,23 @@ class NSolver:
         if max(self.grid) != (self.size ** 2) - 1 or min(self.grid) != 0:
             raise Exception('Wrong tile')
         self.show_grid(self.grid)
-        self._is_solvable()
+        if not self.is_solvable(self.grid[::]):
+            raise Exception('This grid is not solvable.')
 
-    def _is_solvable(self):     #TODO
-        return True
+    def is_solvable(self, grid):
+        s = sqrt[len(grid)]
+        aim = snake[s]
+        z = sum([abs(x - y) for x, y in zip(pos(grid.index(0), s), pos(aim.index(0), s))]) % 2
+        t = 0
+        for i in range(len(grid)):
+            if grid[i] == aim[i]:
+                continue
+            else:
+                grid[grid.index(aim[i])] = grid[i]
+                grid[i] = aim[i]
+                t = 1 - t
+        print('z =', z, 't =', t)
+        return z == t
 
     def show_grid(self, grid):
         k = self.size
@@ -219,9 +235,9 @@ if no input_path are given, a random grid will be generated with a size of users
     NS.solve()
 
 if __name__ == "__main__":
-    main(sys.argv)
-#    try:
-#	    main(sys.argv)
-#    except Exception as e:
-#        if str(e):
-#            print('Error : ' + str(e))
+#   main(sys.argv)
+    try:
+	    main(sys.argv)
+    except Exception as e:
+        if str(e):
+            print('Error : ' + str(e))
