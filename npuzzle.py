@@ -8,15 +8,43 @@ import random
 import collections
 from itertools import permutations
 
-snake = {2:[1,2,3,0],
-        3:[1,2,3,8,0,4,7,6,5],
-        4:[1,2,3,4,12,13,14,5,11,0,15,6,10,9,8,7],
-        5:[1,2,3,4,5,16,17,18,19,6,15,24,0,20,7,14,23,22,21,8,13,12,11,10,9]}
+NBR = 36
 
-sqrt = {4:2,
-        9:3,
-        16:4,
-        25:5}
+def get_snake(size):
+    if size < 2:
+        return []
+    total_size = size * size
+    grid = [-1 for i in range(total_size)]
+    current = 1
+    x = 0
+    ix = 1
+    y = 0
+    iy = 0
+    while current != 0:
+        grid[x + y * size] = current
+        current += 1
+        if x + ix == size or x + ix < 0 or (ix != 0 and grid[x + ix + y * size] != -1):
+            iy = ix
+            ix = 0
+        elif y + iy == size or y + iy < 0 or (iy != 0 and grid[x + (y + iy) * size] != -1):
+            ix = -iy
+            iy = 0
+        x += ix
+        y += iy
+        if current == size * size:
+            current = 0
+            grid[x + y * size] = current
+    return grid
+
+snake = [get_snake(i) for i in range(NBR)]
+
+def get_sqrts(n):
+    ret = {}
+    for i in range(n):
+        ret[i * i] = i
+    return ret
+
+sqrt = get_sqrts(NBR)
 
 def pos(nb, size):
     return (nb // size, nb % size)
@@ -243,8 +271,8 @@ def main(argv):
     if len(argv) > 2:
         print('''usage: ./npuzzle [input_path]
 
-if no input_path are given, a random grid will be generated with a size of users choice''')
-        raise Exception('')
+if no input_path are given, a random solvable grid will be generated with a size of users choice''')
+        return
     NS = NSolver()
     if len(argv) == 2:
         NS.parse(argv[1].strip())
@@ -253,9 +281,8 @@ if no input_path are given, a random grid will be generated with a size of users
     NS.solve()
 
 if __name__ == "__main__":
-#   main(sys.argv)
     try:
-	    main(sys.argv)
+        main(sys.argv)
     except Exception as e:
         if str(e):
             print('Error : ' + str(e))
