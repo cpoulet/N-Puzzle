@@ -10,12 +10,10 @@
 #                                                                             #
 ###############################################################################
 
-# Our modules
+import sys
+
 from nsolver import NSolver
 import utils
-
-# Other modules
-import sys
 
 def main(argv):
     if len(argv) > 2:

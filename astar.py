@@ -8,12 +8,10 @@
 #                                                                             #
 ###############################################################################
 
-# Our modules
+import time
+
 from orderedvaluedict import OrderedValueDict
 from state import State
-
-# Other modules
-import time
 
 class AStar:
     def __init__(self, start, stop, size, heuristic):
@@ -26,7 +24,7 @@ class AStar:
         self.state_number = 0
         self.h = heuristic
 
-    def procede(self):
+    def proceed(self):
         print('Solving Puzzle...')
         t = time.time()
         while not self._open.empty():

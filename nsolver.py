@@ -8,14 +8,13 @@
 #                                                                             #
 ###############################################################################
 
-# Our modules
+import random
+import re
+
 from astar import AStar
 import heuristics
 import utils
-
-# Other modules
-import random
-import re
+from generate import makePuzzle
 
 class NSolver:
     def __init__(self):
@@ -39,16 +38,13 @@ class NSolver:
                     self.grid += [int(x) for x in li]
         self._check_grid()
 
-    def generate(self): # TODO
-        print('Enter the size N of the N-Puzzle for a N*N grid : ', end='')
+    def generate(self):
+        print('Enter the size N of the N-Puzzle for a N * N grid : ', end='')
         self.size = int(input())
         if self.size < 2:
-            print('Can\'t generate a puzzle with size lower than 2. Dummy.')
-        self.grid = list(range(self.size**2))
-        random.shuffle(self.grid)
-        self.show_grid()
-        if not self.is_solvable(self.grid[::]):
-            raise Exception('This grid is not solvable.')
+            print("Can't generate a puzzle with size lower than 2, sorry :)")
+        self.grid = makePuzzle(self.size)
+        self.show_grid(self.grid)
 
     def _check_grid(self):
         if len(self.grid) != self.size ** 2 or len(self.grid) != len(set(self.grid)):
@@ -90,7 +86,7 @@ class NSolver:
             self.solve()
             return
         AS = AStar(self.grid, utils.snake[self.size], self.size, h)
-        self.solution = AS.procede()
+        self.solution = AS.proceed()
         self._output(self.solution)
         print('  ', len(self.seq))
 

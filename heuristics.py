@@ -8,11 +8,9 @@
 #                                                                             #
 ###############################################################################
 
-# Our modules
-import utils
-
-# Other modules
 import itertools
+
+import utils
 
 def missplaced(state):
     size = utils.sqrt[len(state)]
