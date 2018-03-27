@@ -27,18 +27,18 @@ class PriorityQueue:
             self.lenmax = self._index
 
     def pop(self):
-        _, item = heapq.heappop(self._queue)
+        _, _, item = heapq.heappop(self._queue)
         self._set.remove(item)
         self._index -= 1
         return item
 
-    def contain(self, item):
+    def __contains__(self, item):
         return item in self._set
 
     def remove(self, item):
         self._set.remove(item)
         for i, elem in self._queue:
-            if elem[1] is item:
+            if elem[2] is item:
                 del self._queue[i]
                 self._index -= 1
                 return
