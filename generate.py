@@ -20,9 +20,9 @@ def makePuzzle(size):
 			poss.append(idx - 1)
 		if idx % size < size - 1:
 			poss.append(idx + 1)
-		if idx / size > 0:
+		if idx // size > 0:
 			poss.append(idx - size)
-		if idx / size < size - 1:
+		if idx // size < size - 1:
 			poss.append(idx + size)
 		swi = random.choice(poss)
 		puzzle[idx] = puzzle[swi]
