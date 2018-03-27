@@ -39,10 +39,15 @@ class NSolver:
         self._check_grid()
 
     def generate(self):
-        print('Enter the size N of the N-Puzzle for a N * N grid : ', end='')
-        self.size = int(input())
-        if self.size < 2:
-            print("Can't generate a puzzle with size lower than 2, sorry :)")
+        while 1:
+            print('Enter the size N of the N-Puzzle for a N * N grid : ', end='')
+            self.size = int(input())
+            if self.size < 2:
+                print("Can't generate a puzzle with size lower than 2, sorry :)")
+            elif self.size > 5:
+                print("That will be too big for me, sorry :)")
+            else:
+                break
         self.grid = makePuzzle(self.size)
         self.show_grid(self.grid)
 
@@ -89,6 +94,9 @@ class NSolver:
         self.solution = AS.proceed()
         self._output(self.solution)
         print('  ', len(self.seq))
+        for step in self.seq:
+            print()
+            self.show_grid(step)
 
     def _output(self, state):
         if state.parent != None:
