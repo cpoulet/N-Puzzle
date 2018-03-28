@@ -23,7 +23,6 @@ def main():
     parser.add_argument('-g', '--greedy', action='store_true', help='greedy mode')
     parser.add_argument('-u', '--uniformcost', action='store_true', help='uniform cost mode')
     args = parser.parse_args()
-    print(args)
     NS = NSolver(args.quiet, args.greedy, args.uniformcost)
     if args.input:
         if not os.path.exists(args.input) or not os.path.isfile(args.input):
