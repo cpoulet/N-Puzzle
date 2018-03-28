@@ -14,9 +14,11 @@ from pq import PriorityQueue
 from state import State
 
 class AStar:
-    def __init__(self, start, stop, size, heuristic):
+    def __init__(self, start, stop, size, heuristic, greedy=False, uniformcost=False):
         self.size = size
-        self.start = State(start)
+        self._greedy = greedy
+        self._uc = uniformcost
+        self.start = State(start, None, None, self._greedy, self._uc)
         self.stop = stop
         self._open = PriorityQueue()
         self._open.push(self.start.key, self.start, self.start.f)
@@ -34,17 +36,17 @@ class AStar:
                 return self.printSolution(parent, t)
             self._close[parent.key] = parent.f
             for child in self._getChild(parent.state):
-                c = State(child, parent, self.h)
+                c = State(child, parent, self.h, self._greedy, self._uc)
                 k = self._open.get(c.key)
                 l = self._close.get(c.key)
                 if not k and not l:
                     self._open.push(c.key, c, c.f)
                 elif k is not None:
-                    if k > c:
+                    if c < k:
                         self._open.remove(c.key)
                         self._open.push(c.key, c, c.f)
                 elif l is not None:
-                    if l > c.f:
+                    if c.f < l:
                         self._close.pop(c.key)
                         self._open.push(c.key, c, c.f)
 

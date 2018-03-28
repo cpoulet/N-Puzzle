@@ -12,12 +12,14 @@ import utils
 
 class State:
     '''N-Puzzle State'''
-    def __init__(self, state, parent=None, heuristic=None):
+    def __init__(self, state, parent=None, heuristic=None, greedy=False, uniformcost=False):
+        if greedy:
+            uniformcost = False
         self.state = state
         self.key = utils.ltok(state)
         self.parent = parent
-        self.g = parent.g + 1 if parent else 0
-        self.h = heuristic(state) if heuristic else 0
+        self.g = parent.g + 1 if parent and not greedy else 0
+        self.h = heuristic(state) if heuristic and not uniformcost else 0
         self.f = self.g + self.h
 
     def __lt__(self, other):

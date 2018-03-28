@@ -17,9 +17,12 @@ from astar import AStar
 from generate import makePuzzle
 
 class NSolver:
-    def __init__(self):
+    def __init__(self, quiet, greedy, uniformcost):
         self.size = None
         self.seq = []
+        self.quiet = quiet
+        self.greedy = greedy
+        self.uc = uniformcost
         self.HEURISTIC = [ heuristics.manhattan, heuristics.missplaced, heuristics.linearconflict ]
 
     def parse(self, path):
@@ -90,13 +93,14 @@ class NSolver:
             print('Choose a heuristic by entering the corresponding number. Dummy.')
             self.solve()
             return
-        AS = AStar(self.grid, utils.snake[self.size], self.size, h)
+        AS = AStar(self.grid, utils.snake[self.size], self.size, h, self.greedy, self.uc)
         self.solution = AS.proceed()
         self._output(self.solution)
         print('  ', len(self.seq))
-        for step in self.seq:
-            print()
-            self.show_grid(step)
+        if not self.quiet:
+            for step in self.seq:
+                print()
+                self.show_grid(step)
 
     def _output(self, state):
         if state.parent != None:
