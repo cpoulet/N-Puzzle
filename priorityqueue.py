@@ -19,25 +19,28 @@ class PriorityQueue:
         self._index = 0
         self.lenmax = 0
 
-    def push(self, item, priority):
-        heapq.heappush(self._queue, (priority, self._index, item))
-        self._d[item] = item
+    def push(self, item, key, priority):
+        heapq.heappush(self._queue, (priority, self._index, key))
+        self._d[key] = item
         self._index += 1
         if (self._index > self.lenmax):
             self.lenmax = self._index
 
     def pop(self):
         _, _, item = heapq.heappop(self._queue)
-        del self._d[item]
+        del self._d[item.key]
         self._index -= 1
         return item
 
-    def __contains__(self, item):
-        return item in self._d
+    def get(self, key):
+        return self._d[key]
+
+    def __contains__(self, key):
+        return item.key in self._d
 
     def remove(self, item):
         del self._d[item]
-        for i, elem in self._queue:
+        for i, elem in ienumerate(self._queue):
             if elem[2] is item:
                 del self._queue[i]
                 self._index -= 1

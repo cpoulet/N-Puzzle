@@ -32,8 +32,7 @@ class AStar:
             m = self._open.pop()
             if m.state == self.stop:
                 return self.printSolution(m, t)
-            self._close[m.key] = m.f
-            for child in self._get_child(m.state):
+            for child in self._getChild(m.state):
                 c = State(child, m, self.h)
                 k = self._open.get(c.key)
                 l = c.key in self._close
@@ -47,6 +46,7 @@ class AStar:
                     if self._close.get(c.key) > c.f:
                         self._close.pop(c.key)
                         self._open.push(c.key, c, c.f)
+            self._close[m.key] = m.f
 
     def printSolution(self, state, t):
         print ('Success in {:.3f} seconds.'.format(time.time() - t))
@@ -57,7 +57,7 @@ class AStar:
         print ('◦ Number of moves required to transition from the initial state to the final state:')
         return state
 
-    def _get_child(self, m):
+    def _getChild(self, m):
         z = m.index(0)
         moves = self._side(z, self.size)
         for move in moves:
