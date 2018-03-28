@@ -8,7 +8,6 @@
 #                                                                             #
 ###############################################################################
 
-# Our modules
 import utils
 
 class State:
@@ -20,6 +19,12 @@ class State:
         self.g = parent.g + 1 if parent else 0
         self.h = heuristic(state) if heuristic else 0
         self.f = self.g + self.h
+
+    def __lt__(self, other):
+        return self.f < other.f
+
+    def __gt__(self, other):
+        return self.f > other.f
 
     def __repr__(self):
         return "<STATE key: '{}', f: {}>".format('|'.join([str(x) for x in self.state]), self.f)

@@ -29,24 +29,24 @@ class AStar:
         t = time.time()
         while not self._open.empty():
             self.state_number += 1
-            m = self._open.pop()
-            if m.state == self.stop:
-                return self.printSolution(m, t)
-            for child in self._getChild(m.state):
-                c = State(child, m, self.h)
+            parent = self._open.pop()
+            if parent.state == self.stop:
+                return self.printSolution(parent, t)
+            self._close[parent.key] = parent.f
+            for child in self._getChild(parent.state):
+                c = State(child, parent, self.h)
                 k = self._open.get(c.key)
-                l = c.key in self._close
+                l = self._close.get(c.key)
                 if not k and not l:
                     self._open.push(c.key, c, c.f)
-                elif k:
-                    if k.f > c.f:
+                elif k is not None:
+                    if k > c:
                         self._open.remove(c.key)
                         self._open.push(c.key, c, c.f)
-                elif l:
-                    if self._close.get(c.key) > c.f:
+                elif l is not None:
+                    if l > c.f:
                         self._close.pop(c.key)
                         self._open.push(c.key, c, c.f)
-            self._close[m.key] = m.f
 
     def printSolution(self, state, t):
         print ('Success in {:.3f} seconds.'.format(time.time() - t))

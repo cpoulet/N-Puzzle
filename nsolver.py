@@ -8,12 +8,12 @@
 #                                                                             #
 ###############################################################################
 
-import random
 import re
+import random
 
-from astar import AStar
-import heuristics
 import utils
+import heuristics
+from astar import AStar
 from generate import makePuzzle
 
 class NSolver:

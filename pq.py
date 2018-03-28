@@ -11,10 +11,11 @@
 import heapq
 
 class PriorityQueue:
-    '''Sorted Dictionnary with:
+    '''
+    Sorted Queue with:
     O(1) :      pop()
                 contain()
-    O(log(n)) : insort()'''
+    '''
     def __init__(self):
         self._d = {}
         self._queue = []
