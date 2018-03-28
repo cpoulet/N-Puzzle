@@ -10,7 +10,7 @@
 
 import time
 
-from orderedvaluedict import OrderedValueDict
+from pq import PriorityQueue
 from state import State
 
 class AStar:
@@ -18,7 +18,7 @@ class AStar:
         self.size = size
         self.start = State(start)
         self.stop = stop
-        self._open = OrderedValueDict()
+        self._open = PriorityQueue()
         self._open.push(self.start.key, self.start, self.start.f)
         self._close = {}
         self.state_number = 0

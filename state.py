@@ -20,3 +20,6 @@ class State:
         self.g = parent.g + 1 if parent else 0
         self.h = heuristic(state) if heuristic else 0
         self.f = self.g + self.h
+
+    def __repr__(self):
+        return "<STATE key: '{}', f: {}>".format('|'.join([str(x) for x in self.state]), self.f)

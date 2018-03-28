@@ -10,7 +10,7 @@
 
 import heapq
 
-class OrderedValueDict:
+class PriorityQueue:
     '''Sorted Dictionnary with:
     O(1) :      pop()
                 contain()
