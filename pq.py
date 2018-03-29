@@ -8,41 +8,38 @@
 #                                                                             #
 ###############################################################################
 
-# Our modules
+import heapq
 
-# Other modules
-import collections
-import bisect
-
-class OrderedValueDict:
-    '''Dictionnary with:
+class PriorityQueue:
+    '''
+    Sorted Queue with:
     O(1) :      pop()
                 contain()
-    O(log(n)) : insort()'''
+    '''
     def __init__(self):
-        self.d = {}
-        self.list = collections.deque()
+        self._d = {}
+        self._queue = []
         self.lenmax = 0
 
-    def insort(self, key, value, sort_val):
-        self.d[key] = value
-        bisect.insort(self.list, (sort_val, key))
-        if len(self.list) > self.lenmax:
+    def push(self, key, value, sort_val):
+        self._d[key] = value
+        heapq.heappush(self._queue, (sort_val, key))
+        if len(self._queue) > self.lenmax:
             self.lenmax += 1
 
-    def contain(self, key):
-        return self.d.get(key)
+    def __contains__(self, key):
+        return key in self._d
+
+    def get(self, key):
+        return self._d.get(key)
 
     def pop(self):
-        key = self.list.popleft()[1]
-        return self.d.pop(key)
-
-    def min(self):
-        return self.d[self.list[0][1]]
+        _, key = heapq.heappop(self._queue)
+        return self._d.pop(key)
 
     def remove(self, key):
-        d = self.d.pop(key)
-        self.list.remove((d.f, key))
+        state = self._d.pop(key)
+        self._queue.remove((state.f, key))
 
     def empty(self):
-        return not len(self.list)
+        return not len(self._queue)
