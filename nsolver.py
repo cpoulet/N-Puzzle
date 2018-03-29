@@ -8,20 +8,25 @@
 #                                                                             #
 ###############################################################################
 
-# Our modules
-from astar import AStar
-import heuristics
-import utils
-
-# Other modules
-import random
+import os
 import re
+import time
+import random
+
+import utils
+import heuristics
+from astar import AStar
+from generate import makePuzzle
 
 class NSolver:
-    def __init__(self):
+    def __init__(self, quiet, greedy, uniformcost, visual):
         self.size = None
         self.seq = []
-        self.HEURISTIC = [ heuristics.manhattan, heuristics.missplaced, heuristics.linearconflict ]
+        self.quiet = quiet
+        self.greedy = greedy
+        self.uc = uniformcost
+        self.visual = visual
+        self.HEURISTIC = [ heuristics.manhattan, heuristics.missplaced, heuristics.linearconflict, heuristics.euclidiandistance ]
 
     def parse(self, path):
         with open(path, 'r') as f:
@@ -39,16 +44,18 @@ class NSolver:
                     self.grid += [int(x) for x in li]
         self._check_grid()
 
-    def generate(self): # TODO
-        print('Enter the size N of the N-Puzzle for a N*N grid : ', end='')
-        self.size = int(input())
-        if self.size < 2:
-            print('Can\'t generate a puzzle with size lower than 2. Dummy.')
-        self.grid = list(range(self.size**2))
-        random.shuffle(self.grid)
-        self.show_grid()
-        if not self.is_solvable(self.grid[::]):
-            raise Exception('This grid is not solvable.')
+    def generate(self):
+        while 1:
+            print('Enter the size N of the N-Puzzle for a N * N grid : ', end='')
+            self.size = int(input())
+            if self.size < 2:
+                print("Can't generate a puzzle with size lower than 2, sorry :)")
+            elif self.size > 6:
+                print("That will be too big for me, sorry :)")
+            else:
+                break
+        self.grid = makePuzzle(self.size)
+        self.show_grid(self.grid)
 
     def _check_grid(self):
         if len(self.grid) != self.size ** 2 or len(self.grid) != len(set(self.grid)):
@@ -73,28 +80,47 @@ class NSolver:
                 t = 1 - t
         return z == t
 
-    def show_grid(self, grid):
+    def show_grid(self, grid, locate=False):
         k = self.size
+        y = 0
         for x in [grid[i * k : (i + 1) * k] for i in range(k)]:
-            print(*[' ' * (3 - len(str(n))) + str(n) if n else '   ' for n in x])
+            s = "".join([' ' * (3 - len(str(n))) + str(n) if n else '   ' for n in x])
+            if not locate:
+                print(s)
+            else:
+                utils.locate(s, 1, 13 + y + k)
+                y += 1
+        if locate:
+            time.sleep(.200)
+
 
     def solve(self):
         print('''Which heuristic would you like to use :
     [0] - Manhattan distance (taxicab distance)
     [1] - Missplaced tiles
-    [2] - Linear Conflict''')
+    [2] - Linear Conflict
+    [3] - Euclidian Distance''')
         try:
             h = self.HEURISTIC[int(input())]
-        except:
-            print('Choose a heuristic by entering the corresponding number. Dummy.')
+        except IndexError:
+            print('Choose a heuristic by entering the corresponding number. thxbye')
             self.solve()
             return
-        AS = AStar(self.grid, utils.snake[self.size], self.size, h)
-        self.solution = AS.procede()
+        if self.visual:
+            os.system('clear')
+            print('Starting grid\n')
+            self.show_grid(self.grid)
+            print()
+        AS = AStar(self.grid, utils.snake[self.size], self.size, h, self.greedy, self.uc)
+        self.solution = AS.proceed()
         self._output(self.solution)
         print('  ', len(self.seq))
+        if not self.quiet:
+            for step in self.seq[::-1]:
+                print()
+                self.show_grid(step, self.visual)
 
     def _output(self, state):
-        if state.parent != None:
-            self._output(state.parent)
-        self.seq.append(state.state)
+        while state.parent != None:
+            self.seq.append(state.state)
+            state = state.parent

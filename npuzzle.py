@@ -10,27 +10,32 @@
 #                                                                             #
 ###############################################################################
 
-# Our modules
-from nsolver import NSolver
+import os
+import argparse
+
 import utils
+from nsolver import NSolver
 
-# Other modules
-import sys
-
-def main(argv):
-    if len(argv) > 2:
-        print("usage: ./npuzzle [input_path]\n\nif no input_path are given, a random solvable grid will be generated with a size of users choice")
-        return
-    NS = NSolver()
-    if len(argv) == 2:
-        NS.parse(argv[1].strip())
+def main():
+    parser = argparse.ArgumentParser(description='Solver of Taquin\nIf no grid are given as input, a random solvable grid will be generated with a size of users choice')
+    parser.add_argument('input', nargs='?', default=False, help='Input file describing the taquin grid.')
+    parser.add_argument('-q', '--quiet', action='store_true', help='quiet mode')
+    parser.add_argument('-g', '--greedy', action='store_true', help='greedy mode')
+    parser.add_argument('-u', '--uniformcost', action='store_true', help='uniform cost mode')
+    parser.add_argument('-v', '--visual', action='store_true', help='visual mode')
+    args = parser.parse_args()
+    NS = NSolver(args.quiet, args.greedy, args.uniformcost, args.visual)
+    if args.input:
+        if not os.path.exists(args.input) or not os.path.isfile(args.input):
+            raise Exception('File not found: "' + args.input + '".')
+        NS.parse(args.input)
     else:
         NS.generate()
     NS.solve()
 
 if __name__ == "__main__":
     try:
-        main(sys.argv)
+        main()
     except Exception as e:
         if str(e):
             print('Error : ' + str(e))

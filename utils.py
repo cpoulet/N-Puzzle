@@ -34,6 +34,11 @@ def get_snake(size):
             grid[x + y * size] = current
     return grid
 
+def locate(user_string, x=0, y=0):
+	HORIZ=str(int(x))
+	VERT=str(int(y))
+	print("\033[" + VERT + ";" + HORIZ + "f" + user_string)
+
 def get_sqrts(n):
     ret = {}
     for i in range(n):

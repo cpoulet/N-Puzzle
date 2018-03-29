@@ -8,11 +8,9 @@
 #                                                                             #
 ###############################################################################
 
-# Our modules
-import utils
-
-# Other modules
 import itertools
+
+import utils
 
 def missplaced(state):
     size = utils.sqrt[len(state)]
@@ -44,3 +42,12 @@ def linearconflict(state):
         k += _conflict(state[i*size:(i + 1)*size], utils.snake[size][i*size:(i + 1)*size])
         k += _conflict([state[x*size + i] for x in range(size)],[utils.snake[size][x*size + i] for x in range(size)])
     return k + manhattan(state)
+
+def euclidiandistance(state):
+    d = 0
+    size = utils.sqrt[len(state)]
+    for i,x in enumerate(state):
+        ti = utils.pos(i, size)
+        tx = utils.pos(utils.snake[size].index(x), size)
+        d += int((((ti[0] - tx[0]) ** 2) + ((ti[1] - tx[1]) ** 2)) ** .5)
+    return d
